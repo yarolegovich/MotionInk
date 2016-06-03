@@ -4,13 +4,19 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
+import android.view.View;
 
 /**
  * Created by yarolegovich on 03.06.2016.
  */
 public class SquareSurfaceView extends SurfaceView {
+
+    private View.OnTouchListener touchListener;
+
     public SquareSurfaceView(Context context) {
         super(context);
     }
@@ -38,4 +44,6 @@ public class SquareSurfaceView extends SurfaceView {
             super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY));
         }
     }
+
+
 }
