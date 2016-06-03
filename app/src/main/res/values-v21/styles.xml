@@ -3,4 +3,9 @@
     <style name="ToolStyle" parent="ToolStyleBase">
         <item name="android:background">?android:selectableItemBackgroundBorderless</item>
     </style>
+
+    <style name="BorderlessBgStyle">
+        <item name="android:background">?android:selectableItemBackgroundBorderless</item>
+    </style>
+
 </resources>

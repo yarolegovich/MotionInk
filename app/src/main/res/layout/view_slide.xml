@@ -24,10 +24,10 @@
 
         <ImageView
             android:id="@+id/btn_remove_slide"
+            style="@style/BorderlessBgStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:background="?android:selectableItemBackground"
             android:clickable="true"
             android:src="@drawable/ic_close_black_18dp"
             android:tint="?android:textColorSecondary" />

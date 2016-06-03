@@ -3,7 +3,7 @@
     <item android:drawable="?android:selectableItemBackgroundBorderless" />
     <item android:id="@+id/circle_selected">
         <shape android:shape="oval">
-            <solid android:color="#3cffffff" />
+            <solid android:color="@color/colorSelectedTool" />
         </shape>
     </item>
 </layer-list>

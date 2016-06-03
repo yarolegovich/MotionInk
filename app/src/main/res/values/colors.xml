@@ -5,4 +5,6 @@
     <color name="colorAccent">#009688</color>
 
     <color name="colorSlideView">#5a000000</color>
+
+    <color name="colorSelectedTool">#32ffffff</color>
 </resources>

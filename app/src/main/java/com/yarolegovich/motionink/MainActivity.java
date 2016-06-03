@@ -1,5 +1,8 @@
 package com.yarolegovich.motionink;
 
+import android.Manifest;
+import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.SurfaceView;
@@ -7,7 +10,9 @@ import android.view.View;
 
 import com.yarolegovich.motionink.draw.DrawingArea;
 import com.yarolegovich.motionink.draw.EraserTool;
+import com.yarolegovich.motionink.draw.SlideManager;
 import com.yarolegovich.motionink.draw.StandardBrushTool;
+import com.yarolegovich.motionink.util.Permissions;
 import com.yarolegovich.motionink.view.SlideView;
 import com.yarolegovich.motionink.view.ToolPanelView;
 
@@ -17,18 +22,14 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
     private DrawingArea drawingArea;
 
     private View brushConfigFab;
-
     private int fabTranslation;
+
+    private Permissions permissionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        SlideView slideView = (SlideView) findViewById(R.id.slide_view);
-        for (int i = 0; i < 10; i++) {
-            slideView.addSlide();
-        }
 
         int marginBottom = getResources().getDimensionPixelSize(R.dimen.brush_conf_fab_marginBottom);
         int fabSize = getResources().getDimensionPixelSize(R.dimen.fab_size);
@@ -46,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
         drawingArea = new DrawingArea(surfaceView);
         drawingArea.setDrawingStartedListener(() -> setBrushConfigFabVisibility(false));
 
+        SlideView slideView = (SlideView) findViewById(R.id.slide_view);
+        slideView.setListener(new SlideManager(drawingArea));
+
+        permissionHelper = new Permissions(this);
     }
 
     @Override
@@ -67,13 +72,26 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
             case R.id.toolpanel_redo:
                 break;
             case R.id.toolpanel_camera:
+                openCameraActivity();
                 break;
             case R.id.toolpanel_done:
                 break;
         }
     }
 
+    private void openCameraActivity() {
+        Intent cameraIntent = new Intent(this, CameraActivity.class);
+        permissionHelper.doIfPermitted(() -> startActivity(cameraIntent), Manifest.permission.CAMERA);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionHelper.handleGrantResults(grantResults);
+    }
+
     private boolean hidden = false;
+
     private void setBrushConfigFabVisibility(boolean visible) {
         if (visible) {
             if (hidden) {

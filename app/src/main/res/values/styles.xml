@@ -17,4 +17,8 @@
         <item name="android:background">?android:selectableItemBackground</item>
     </style>
 
+    <style name="BorderlessBgStyle">
+        <item name="android:background">?android:selectableItemBackground</item>
+    </style>
+
 </resources>
