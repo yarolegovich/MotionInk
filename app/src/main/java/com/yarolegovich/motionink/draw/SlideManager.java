@@ -1,5 +1,7 @@
 package com.yarolegovich.motionink.draw;
 
+import com.yarolegovich.motionink.draw.persist.SlideImageSerializer;
+import com.yarolegovich.motionink.draw.persist.StrokeSerializer;
 import com.yarolegovich.motionink.view.SlideView;
 
 import java.util.Collections;
@@ -12,6 +14,8 @@ import java.util.List;
 public class SlideManager implements SlideView.SlideSelectionListener {
 
     private List<Stroke> backgroundStrokes;
+
+    private SlideImageSerializer slideImageSerializer;
     private StrokeSerializer strokeSerializer;
 
     private int currentPosition;
@@ -22,6 +26,8 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         this.drawingArea = drawingArea;
 
         strokeSerializer = new StrokeSerializer(drawingArea.getContext());
+        slideImageSerializer = new SlideImageSerializer(drawingArea.getContext());
+
         backgroundStrokes = new LinkedList<>();
     }
 
@@ -32,6 +38,7 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         }
         strokeSerializer.setDimension(drawingArea.getWidth(), drawingArea.getHeight());
         strokeSerializer.saveStrokes(currentPosition, drawingArea.getStrokeList());
+        drawingArea.displayRaster(slideImageSerializer.loadIfExists(slidePosition));
         if (slidePosition != SlideView.POSITION_BG) {
             drawingArea.setBackgroundStrokes(backgroundStrokes);
             List<Stroke> strokes = strokeSerializer.loadStrokes(slidePosition);
@@ -51,6 +58,11 @@ public class SlideManager implements SlideView.SlideSelectionListener {
     @Override
     public void onSlideRemoved(int slidePosition) {
 
+    }
+
+    public void reinitialize(int slidePosition) {
+        currentPosition = Integer.MIN_VALUE;
+        onSlideSelected(slidePosition);
     }
 }
 

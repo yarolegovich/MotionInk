@@ -2,6 +2,7 @@ package com.yarolegovich.motionink;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,10 +20,15 @@ import com.yarolegovich.motionink.view.ToolPanelView;
 @SuppressWarnings("ConstantConditions")
 public class MainActivity extends AppCompatActivity implements ToolPanelView.OnToolSelectedListener {
 
+    private static final int REQUEST_TAKE_PICTURES = 5777;
+
     private DrawingArea drawingArea;
 
     private View brushConfigFab;
     private int fabTranslation;
+
+    private SlideView slideView;
+    private SlideManager slideManager;
 
     private Permissions permissionHelper;
 
@@ -47,8 +53,9 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
         drawingArea = new DrawingArea(surfaceView);
         drawingArea.setDrawingStartedListener(() -> setBrushConfigFabVisibility(false));
 
-        SlideView slideView = (SlideView) findViewById(R.id.slide_view);
-        slideView.setListener(new SlideManager(drawingArea));
+        slideManager = new SlideManager(drawingArea);
+        slideView = (SlideView) findViewById(R.id.slide_view);
+        slideView.setListener(slideManager);
 
         permissionHelper = new Permissions(this);
     }
@@ -79,9 +86,24 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_TAKE_PICTURES) {
+            if (resultCode == RESULT_OK) {
+                new Handler().postDelayed(
+                        () -> slideManager.reinitialize(slideView.getCurrentSlide()),
+                        500);
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
     private void openCameraActivity() {
         Intent cameraIntent = new Intent(this, CameraActivity.class);
-        permissionHelper.doIfPermitted(() -> startActivity(cameraIntent), Manifest.permission.CAMERA);
+        permissionHelper.doIfPermitted(
+                () -> startActivityForResult(cameraIntent, REQUEST_TAKE_PICTURES),
+                Manifest.permission.CAMERA);
     }
 
     @Override

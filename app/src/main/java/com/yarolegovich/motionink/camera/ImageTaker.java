@@ -46,11 +46,7 @@ public abstract class ImageTaker implements TextureView.SurfaceTextureListener {
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         if (handlerThread != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                handlerThread.quitSafely();
-            } else {
-                handlerThread.quit();
-            }
+            handlerThread.quit();
         }
         return true;
     }

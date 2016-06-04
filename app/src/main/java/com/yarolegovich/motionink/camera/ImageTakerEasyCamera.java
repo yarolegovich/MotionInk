@@ -2,6 +2,7 @@ package com.yarolegovich.motionink.camera;
 
 import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
+import android.media.MediaActionSound;
 
 import net.bozho.easycamera.DefaultEasyCamera;
 import net.bozho.easycamera.EasyCamera;
@@ -14,8 +15,14 @@ class ImageTakerEasyCamera extends ImageTaker {
     private EasyCamera easyCamera;
     private EasyCamera.CameraActions actions;
     EasyCamera.PictureCallback pictureCallback = (data, camActions) -> {
-        imageProcessingHandler.post(() -> callback.onImageTaken(data));
+        imageProcessingHandler.post(() -> {
+            if (callback != null) {
+                callback.onImageTaken(data);
+            }
+        });
     };
+
+    private MediaActionSound sound;
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -24,26 +31,39 @@ class ImageTakerEasyCamera extends ImageTaker {
             easyCamera = DefaultEasyCamera.open();
             easyCamera.setDisplayOrientation(getRotation());
             actions = easyCamera.startPreview(surface);
+
+            sound = new MediaActionSound();
         } catch (Exception e) {
             if (easyCamera != null) {
                 easyCamera.close();
+            }
+            if (sound != null) {
+                sound.release();
             }
         }
     }
 
     @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+    public synchronized boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        boolean flag = super.onSurfaceTextureDestroyed(surface);
         if (easyCamera != null) {
             easyCamera.close();
+            easyCamera = null;
         }
-        return super.onSurfaceTextureDestroyed(surface);
+        if (sound != null) {
+            sound.release();
+        }
+        return flag;
     }
 
     @Override
-    public void capture() {
-        actions.takePicture(EasyCamera.Callbacks.create()
-                .withRestartPreviewAfterCallbacks(true)
-                .withJpegCallback(pictureCallback));
+    public synchronized void capture() {
+        if (easyCamera != null) {
+            sound.play(MediaActionSound.SHUTTER_CLICK);
+            actions.takePicture(EasyCamera.Callbacks.create()
+                    .withRestartPreviewAfterCallbacks(true)
+                    .withJpegCallback(pictureCallback));
+        }
     }
 
     private int getRotation() {

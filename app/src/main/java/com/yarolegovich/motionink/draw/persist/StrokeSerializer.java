@@ -1,4 +1,4 @@
-package com.yarolegovich.motionink.draw;
+package com.yarolegovich.motionink.draw.persist;
 
 import android.content.Context;
 import android.net.Uri;
@@ -7,6 +7,7 @@ import android.util.Log;
 import com.wacom.ink.serialization.InkDecoder;
 import com.wacom.ink.serialization.InkEncoder;
 import com.wacom.ink.utils.Utils;
+import com.yarolegovich.motionink.draw.Stroke;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -18,6 +19,8 @@ import java.util.List;
  * Created by yarolegovich on 04.06.2016.
  */
 public class StrokeSerializer {
+
+    private static final String DIR = "/strokes";
 
     private static final int DEFAULT_DECIMAL_PRECISION = 2;
     private static final String FILE_NAME_BASE = "slide";
@@ -32,6 +35,11 @@ public class StrokeSerializer {
         this.context = context;
 
         decimalPrecision = DEFAULT_DECIMAL_PRECISION;
+
+        File directory = new File(context.getFilesDir() + DIR);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
     }
 
     public boolean saveStrokes(int slidePosition, List<Stroke> strokeList) {
@@ -43,7 +51,7 @@ public class StrokeSerializer {
     }
 
     private boolean saveBinary(int slidePosition, List<Stroke> strokeList) {
-        File slideFile = new File(context.getFilesDir(), FILE_NAME_BASE + slidePosition);
+        File slideFile = new File(context.getFilesDir() + DIR, FILE_NAME_BASE + slidePosition);
 
         InkEncoder inkEncoder = new InkEncoder();
 
@@ -99,8 +107,6 @@ public class StrokeSerializer {
                     decoder.getDecodedPathSize());
             stroke.calculateBounds();
             result.add(stroke);
-
-            Log.d("serial", "color load: " + stroke.getColor());
         }
 
         return result;
@@ -113,5 +119,13 @@ public class StrokeSerializer {
 
     public void setDecimalPrecision(int decimalPrecision) {
         this.decimalPrecision = decimalPrecision;
+    }
+
+    public void clearProject() {
+        File dir = new File(context.getFilesDir() + DIR);
+        String[] children = dir.list();
+        for (int i = 0; i < children.length; i++) {
+            new File(dir, children[i]).delete();
+        }
     }
 }

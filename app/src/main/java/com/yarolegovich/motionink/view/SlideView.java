@@ -112,6 +112,10 @@ public class SlideView extends HorizontalScrollView {
         return slide;
     }
 
+    public int getCurrentSlide() {
+        return currentSlide;
+    }
+
     public void setListener(SlideSelectionListener listener) {
         this.listener = listener;
     }
