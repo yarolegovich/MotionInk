@@ -18,44 +18,25 @@ import java.util.List;
 /**
  * Created by yarolegovich on 04.06.2016.
  */
-public class StrokeSerializer {
-
-    private static final String DIR = "/strokes";
+public class StrokeSerializer extends Serializer<List<Stroke>, List<Stroke>> {
 
     private static final int DEFAULT_DECIMAL_PRECISION = 2;
-    private static final String FILE_NAME_BASE = "slide";
 
-    private Context context;
     private int decimalPrecision;
 
-    private int width;
-    private int height;
-
     public StrokeSerializer(Context context) {
-        this.context = context;
+        super(context);
 
         decimalPrecision = DEFAULT_DECIMAL_PRECISION;
-
-        File directory = new File(context.getFilesDir() + DIR);
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
     }
 
-    public boolean saveStrokes(int slidePosition, List<Stroke> strokeList) {
-        return saveBinary(slidePosition, strokeList);
-    }
-
-    public List<Stroke> loadStrokes(int slidePosition) {
-        return loadBinary(slidePosition);
-    }
-
-    private boolean saveBinary(int slidePosition, List<Stroke> strokeList) {
-        File slideFile = new File(context.getFilesDir() + DIR, FILE_NAME_BASE + slidePosition);
+    @Override
+    public void save(int slidePosition, List<Stroke> data) {
+        File slideFile = new File(getDir(), getFileName(slidePosition));
 
         InkEncoder inkEncoder = new InkEncoder();
 
-        for (Stroke stroke : strokeList) {
+        for (Stroke stroke : data) {
             inkEncoder.encodePath(
                     decimalPrecision, stroke.getPoints(), stroke.getSize(),
                     stroke.getStride(), stroke.getWidth(), stroke.getColor(),
@@ -77,11 +58,12 @@ public class StrokeSerializer {
 
         Uri slideUri = Uri.fromFile(slideFile);
 
-        return Utils.saveBinaryFile(slideUri, buffer, 0, encodedSize);
+        Utils.saveBinaryFile(slideUri, buffer, 0, encodedSize);
     }
 
-    private List<Stroke> loadBinary(int slidePosition) {
-        File slideFile = new File(context.getFilesDir(), FILE_NAME_BASE + slidePosition);
+    @Override
+    public List<Stroke> load(int slidePosition) {
+        File slideFile = new File(getDir(), getFileName(slidePosition));
         Uri slideUri = Uri.fromFile(slideFile);
 
         ByteBuffer buffer = Utils.loadBinaryFile(slideUri);
@@ -112,20 +94,22 @@ public class StrokeSerializer {
         return result;
     }
 
-    public void setDimension(int width, int height) {
-        this.width = width;
-        this.height = height;
+    @Override
+    protected File getDir() {
+        return new File(context.getFilesDir() + "/strokes");
+    }
+
+    @Override
+    protected String getFileName(int slidePosition) {
+        return "slide" + slidePosition;
+    }
+
+    @Override
+    public int noOfSlides() {
+        return super.noOfSlides() - 2;
     }
 
     public void setDecimalPrecision(int decimalPrecision) {
         this.decimalPrecision = decimalPrecision;
-    }
-
-    public void clearProject() {
-        File dir = new File(context.getFilesDir() + DIR);
-        String[] children = dir.list();
-        for (int i = 0; i < children.length; i++) {
-            new File(dir, children[i]).delete();
-        }
     }
 }

@@ -89,6 +89,13 @@ public class SlideView extends HorizontalScrollView {
 
     }
 
+    public void addSlides(int noOfSlides) {
+        for (int i = 0; i < noOfSlides; i++) {
+            addSlide();
+        }
+    }
+
+
     private void assertCantRemoveAllSlides() {
         SlideHolder firstSlideHolder = (SlideHolder) container
                 .getChildAt(FIRST_SLIDE_INDEX)
@@ -114,6 +121,10 @@ public class SlideView extends HorizontalScrollView {
 
     public int getCurrentSlide() {
         return currentSlide;
+    }
+
+    public int noOfSlides() {
+        return container.getChildCount() - 2;
     }
 
     public void setListener(SlideSelectionListener listener) {

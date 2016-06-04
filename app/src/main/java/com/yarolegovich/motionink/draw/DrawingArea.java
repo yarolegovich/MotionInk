@@ -67,7 +67,6 @@ public class DrawingArea {
 
     MultiChannelSmoothener smoothener;
 
-    private boolean hasImageLayer;
     private Bitmap raster;
 
     public DrawingArea(SurfaceView surfaceView) {
@@ -157,9 +156,13 @@ public class DrawingArea {
     }
 
     public void setCurrentTool(Tool currentTool) {
-        this.currentTool.release();
+        if (this.currentTool != null) {
+            this.currentTool.release();
+        }
         this.currentTool = currentTool;
-        this.currentTool.init(this);
+        if (inkCanvas != null) {
+            this.currentTool.init(this);
+        }
     }
 
     public void setColor(@ColorInt int color) {
@@ -185,8 +188,10 @@ public class DrawingArea {
 
     public void setStrokeList(@NonNull List<Stroke> strokeList) {
         currentStrokes = strokeList;
-        drawStrokes();
-        renderView();
+        if (inkCanvas != null) {
+            drawStrokes();
+            renderView();
+        }
     }
 
     public void setPreviousSlideStrokes(@NonNull List<Stroke> previousSlideStrokes) {
@@ -233,10 +238,12 @@ public class DrawingArea {
     }
 
     private void loadImageLayer(Bitmap bitmap) {
-        inkCanvas.loadBitmap(
-                inkImageLayer, bitmap,
-                GLES20.GL_LINEAR,
-                GLES20.GL_CLAMP_TO_EDGE);
+        if (inkCanvas != null) {
+            inkCanvas.loadBitmap(
+                    inkImageLayer, bitmap,
+                    GLES20.GL_LINEAR,
+                    GLES20.GL_CLAMP_TO_EDGE);
+        }
     }
 
     public int getColor() {
@@ -306,7 +313,9 @@ public class DrawingArea {
                 drawingStartedListener.onDrawingStarted();
             }
             boolean isFinished = buildPath(event);
-            currentTool.onMotionEvent(DrawingArea.this, event, inkImageLayer, isFinished);
+            if (currentTool != null) {
+                currentTool.onMotionEvent(DrawingArea.this, event, inkImageLayer, isFinished);
+            }
             return true;
         }
     }
@@ -316,9 +325,16 @@ public class DrawingArea {
     }
 
     private void releaseResources() {
-        currentTool.release();
+        if (currentTool != null) {
+            currentTool.release();
+        }
         strokeRenderer.dispose();
         inkCanvas.dispose();
+        inkCanvas = null;
+    }
+
+    public void releaseOpenGl() {
+        inkCanvas.releaseOpenGlState();
     }
 
     public Context getContext() {

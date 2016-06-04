@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
 
     private Permissions permissionHelper;
 
+    private Handler handler =  new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,11 +53,13 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
 
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.drawing_surface);
         drawingArea = new DrawingArea(surfaceView);
+        drawingArea.setCurrentTool(new StandardBrushTool());
         drawingArea.setDrawingStartedListener(() -> setBrushConfigFabVisibility(false));
 
         slideManager = new SlideManager(drawingArea);
         slideView = (SlideView) findViewById(R.id.slide_view);
         slideView.setListener(slideManager);
+        slideView.addSlides(slideManager.getNumberOfSlides() - 1);
 
         permissionHelper = new Permissions(this);
     }
@@ -82,8 +86,24 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
                 openCameraActivity();
                 break;
             case R.id.toolpanel_done:
+                slideManager.reinitialize(0);
+                slideManager.setNumberOfSlides(slideView.noOfSlides());
+                findViewById(R.id.overlay).setOnTouchListener((v, e) -> true);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        slideManager.nextSlide();
+                        handler.postDelayed(this, 100);
+                    }
+                });
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(null);
     }
 
     @Override

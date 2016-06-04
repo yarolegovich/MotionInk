@@ -1,5 +1,8 @@
 package com.yarolegovich.motionink.draw;
 
+import android.graphics.Bitmap;
+
+import com.yarolegovich.motionink.draw.persist.Serializer;
 import com.yarolegovich.motionink.draw.persist.SlideImageSerializer;
 import com.yarolegovich.motionink.draw.persist.StrokeSerializer;
 import com.yarolegovich.motionink.view.SlideView;
@@ -15,9 +18,10 @@ public class SlideManager implements SlideView.SlideSelectionListener {
 
     private List<Stroke> backgroundStrokes;
 
-    private SlideImageSerializer slideImageSerializer;
-    private StrokeSerializer strokeSerializer;
+    private Serializer<byte[], Bitmap> slideImageSerializer;
+    private Serializer<List<Stroke>, List<Stroke>> strokeSerializer;
 
+    private int numberOfSlides;
     private int currentPosition;
 
     private DrawingArea drawingArea;
@@ -36,15 +40,14 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         if (slidePosition == currentPosition) {
             return;
         }
-        strokeSerializer.setDimension(drawingArea.getWidth(), drawingArea.getHeight());
-        strokeSerializer.saveStrokes(currentPosition, drawingArea.getStrokeList());
-        drawingArea.displayRaster(slideImageSerializer.loadIfExists(slidePosition));
+        strokeSerializer.save(currentPosition, drawingArea.getStrokeList());
+        drawingArea.displayRaster(slideImageSerializer.load(slidePosition));
         if (slidePosition != SlideView.POSITION_BG) {
             drawingArea.setBackgroundStrokes(backgroundStrokes);
-            List<Stroke> strokes = strokeSerializer.loadStrokes(slidePosition);
+            List<Stroke> strokes = strokeSerializer.load(slidePosition);
             drawingArea.setStrokeList(strokes);
             List<Stroke> previousSlideStrokes = slidePosition != currentPosition + 1 ?
-                    strokeSerializer.loadStrokes(slidePosition - 1) :
+                    strokeSerializer.load(slidePosition - 1) :
                     drawingArea.getStrokeList();
             drawingArea.setPreviousSlideStrokes(previousSlideStrokes);
         } else {
@@ -55,14 +58,27 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         currentPosition = slidePosition;
     }
 
+    public void nextSlide() {
+        onSlideSelected((currentPosition + 1) % numberOfSlides);
+    }
+
+    public int getNumberOfSlides() {
+        return Math.max(strokeSerializer.noOfSlides(), slideImageSerializer.noOfSlides());
+    }
+
     @Override
     public void onSlideRemoved(int slidePosition) {
-
+        strokeSerializer.remove(slidePosition);
+        slideImageSerializer.remove(slidePosition);
     }
 
     public void reinitialize(int slidePosition) {
         currentPosition = Integer.MIN_VALUE;
         onSlideSelected(slidePosition);
+    }
+
+    public void setNumberOfSlides(int numberOfSlides) {
+        this.numberOfSlides = numberOfSlides;
     }
 }
 

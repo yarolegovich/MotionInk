@@ -15,31 +15,23 @@ import java.io.OutputStream;
 /**
  * Created by yarolegovich on 04.06.2016.
  */
-public class SlideImageSerializer {
+public class SlideImageSerializer extends Serializer<byte[], Bitmap> {
 
-    private static final String DIR = "/rasters";
-
-    private static final String BASE_NAME = "slide-img";
-    private static final String EXTENSION = ".jpg";
-
-    private Context context;
     private int savedCounter = 0;
 
-    private int width, height;
-
     public SlideImageSerializer(Context context) {
-        this.context = context;
-        File directory = new File(context.getFilesDir() + DIR);
-        if (!directory.exists()) {
-            directory.mkdir();
-        }
+        super(context);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void saveImage(byte[] imageData) {
-        File file = new File(context.getFilesDir() + DIR, BASE_NAME + savedCounter + EXTENSION);
+    public void saveImage(byte[] data) {
+        save(savedCounter, data);
+    }
 
-        Bitmap image = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+    @Override
+    public void save(int slidePosition, byte[] data) {
+        File file = new File(getDir(), getFileName(slidePosition));
+
+        Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
         Matrix rotationMat = new Matrix();
         rotationMat.setRotate(90);
 
@@ -70,7 +62,6 @@ public class SlideImageSerializer {
         } catch (Exception e) {
             file.delete();
             Log.e(getClass().getSimpleName(), e.getMessage(), e);
-            return;
         } finally {
             if (imageFileOS != null) {
                 try {
@@ -84,8 +75,9 @@ public class SlideImageSerializer {
         savedCounter++;
     }
 
-    public Bitmap loadIfExists(int slidePosition) {
-        File file = new File(context.getFilesDir() + DIR, BASE_NAME + slidePosition + EXTENSION);
+    @Override
+    public Bitmap load(int slidePosition) {
+        File file = new File(getDir(), getFileName(slidePosition));
         if (file.exists()) {
             return BitmapFactory.decodeFile(file.getAbsolutePath());
         } else {
@@ -93,16 +85,13 @@ public class SlideImageSerializer {
         }
     }
 
-    public void setDimension(int width, int height) {
-        this.width = width;
-        this.height = height;
+    @Override
+    protected File getDir() {
+        return new File(context.getFilesDir() + "/rasters");
     }
 
-    public void prepareDir() {
-        File dir = new File(context.getFilesDir() + DIR);
-        String[] children = dir.list();
-        for (int i = 0; i < children.length; i++) {
-            new File(dir, children[i]).delete();
-        }
+    @Override
+    protected String getFileName(int slidePosition) {
+        return "slide-img" + slidePosition + ".jpg";
     }
 }
