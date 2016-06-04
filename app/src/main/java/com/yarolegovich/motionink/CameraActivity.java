@@ -73,7 +73,7 @@ public class CameraActivity extends AppCompatActivity {
 
     private void stopTakingPhotos() {
         fab.setImageResource(R.drawable.ic_camera_alt_white_24dp);
-        handler.removeCallbacks(null);
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override

@@ -49,6 +49,9 @@ public class DrawingArea {
 
     private List<Stroke> undoneStrokes;
 
+    private boolean isInPresentationMode;
+    private int sketchColor;
+
     private int color;
 
     //ALL PACKAGE-PRIVATE FIELDS ARE EXTENSIVELY USED BY TOOL IMPLEMENTATIONS
@@ -85,6 +88,7 @@ public class DrawingArea {
         currentTool = new StandardBrushTool();
 
         color = ContextCompat.getColor(getContext(), R.color.colorAccent);
+        sketchColor = ContextCompat.getColor(getContext(), R.color.colorSketchLine);
 
         smoothener = new MultiChannelSmoothener(pathBuilder.getStride());
 
@@ -128,6 +132,9 @@ public class DrawingArea {
         inkCanvas.drawLayer(inkImageLayer, BlendMode.BLENDMODE_OVERWRITE);
 
         drawStrokes(backgroundStrokes);
+        if (!isInPresentationMode) {
+            sketchPreviousSlide();
+        }
         drawStrokes(currentStrokes);
 
         paint.setColor(color);
@@ -141,6 +148,17 @@ public class DrawingArea {
     private void drawStrokes(List<Stroke> strokes) {
         for (Stroke stroke : strokes) {
             paint.setColor(stroke.getColor());
+            strokeRenderer.setStrokePaint(paint);
+            strokeRenderer.drawPoints(
+                    stroke.getPoints(), 0, stroke.getSize(), stroke.getStartValue(),
+                    stroke.getEndValue(), true);
+            strokeRenderer.blendStroke(inkStrokeLayer, BlendMode.BLENDMODE_NORMAL);
+        }
+    }
+
+    private void sketchPreviousSlide() {
+        for (Stroke stroke : previousSlideStrokes) {
+            paint.setColor(sketchColor);
             strokeRenderer.setStrokePaint(paint);
             strokeRenderer.drawPoints(
                     stroke.getPoints(), 0, stroke.getSize(), stroke.getStartValue(),
@@ -163,6 +181,12 @@ public class DrawingArea {
         if (inkCanvas != null) {
             this.currentTool.init(this);
         }
+    }
+
+    public void setWidth(int width) {
+        pathBuilder.setPropertyConfig(
+                PathBuilder.PropertyName.Width, width - 2, width + 2, Float.NaN, Float.NaN,
+                PathBuilder.PropertyFunction.Power, 1.0f, false);
     }
 
     public void setColor(@ColorInt int color) {
@@ -252,6 +276,10 @@ public class DrawingArea {
 
     public void setDrawingStartedListener(OnDrawingStartedListener drawingStartedListener) {
         this.drawingStartedListener = drawingStartedListener;
+    }
+
+    public void setInPresentationMode(boolean inPresentationMode) {
+        isInPresentationMode = inPresentationMode;
     }
 
     private class Lifecycle implements SurfaceHolder.Callback {

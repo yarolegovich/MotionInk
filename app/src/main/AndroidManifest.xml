@@ -22,6 +22,8 @@
             android:name=".CameraActivity"
             android:screenOrientation="portrait"/>
 
+        <service android:name=".gif.GifEncoderService"/>
+
     </application>
 
 </manifest>

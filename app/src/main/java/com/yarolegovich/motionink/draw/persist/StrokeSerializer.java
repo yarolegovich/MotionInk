@@ -10,6 +10,7 @@ import com.wacom.ink.utils.Utils;
 import com.yarolegovich.motionink.draw.Stroke;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.LinkedList;
@@ -104,9 +105,10 @@ public class StrokeSerializer extends Serializer<List<Stroke>, List<Stroke>> {
         return "slide" + slidePosition;
     }
 
+
     @Override
-    public int noOfSlides() {
-        return super.noOfSlides() - 2;
+    protected File[] getFiles() {
+        return getDir().listFiles((dir, filename) -> !filename.contains("-"));
     }
 
     public void setDecimalPrecision(int decimalPrecision) {

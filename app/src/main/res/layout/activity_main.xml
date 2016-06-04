@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,15 +43,23 @@
     <FrameLayout
         android:id="@+id/overlay"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/brush_config_fab"
-        android:layout_width="wrap_content"
+    <com.yarolegovich.motionink.view.PresentationControlView
+        android:id="@+id/presentation_controls"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/brush_conf_fab_marginBottom"
-        android:layout_gravity="bottom|right"
-        android:src="@drawable/ic_settings_white_24dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp" />
-</FrameLayout>
+        android:visibility="invisible" />
+
+    <com.yarolegovich.motionink.view.PresentationSpeedView
+        android:id="@+id/presentation_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="invisible" />
+
+
+    <include
+        android:id="@+id/bottom_sheet"
+        layout="@layout/bottomsheet_brush_configure" />
+</android.support.design.widget.CoordinatorLayout>

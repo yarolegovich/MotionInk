@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MotionInk</string>
+    <string name="animation_speed">Animation speed</string>
+    <string name="brush_width">Brush width</string>
+    <string name="opacity">Opacity</string>
+    <string name="color">Color</string>
 </resources>

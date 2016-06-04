@@ -7,4 +7,6 @@
     <color name="colorSlideView">#5a000000</color>
 
     <color name="colorSelectedTool">#32ffffff</color>
+
+    <color name="colorSketchLine">#e0e0e0</color>
 </resources>

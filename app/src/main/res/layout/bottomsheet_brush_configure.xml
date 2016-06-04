@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp">
+
+        <TextView
+            style="@style/MaterialHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/brush_width" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/width_slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            style="@style/MaterialHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/opacity" />
+
+        <com.flask.colorpicker.slider.AlphaSlider
+            android:id="@+id/v_alpha_slider"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp" />
+
+        <TextView
+            style="@style/MaterialHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/color" />
+
+        <com.flask.colorpicker.ColorPickerView
+            android:id="@+id/color_picker_view"
+            android:layout_width="match_parent"
+            android:layout_height="164dp"
+            android:layout_gravity="center_horizontal"
+            app:alphaSlider="true"
+            app:alphaSliderView="@+id/v_alpha_slider"
+            app:density="5"
+            app:lightnessSlider="true"
+            app:lightnessSliderView="@+id/v_lightness_slider"
+            app:wheelType="CIRCLE" />
+
+        <com.flask.colorpicker.slider.LightnessSlider
+            android:id="@+id/v_lightness_slider"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp" />
+
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/ic_settings_white_24dp" />
+</FrameLayout>

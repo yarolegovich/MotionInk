@@ -1,8 +1,12 @@
 package com.yarolegovich.motionink.draw.persist;
 
 import android.content.Context;
+import android.util.Log;
+
+import com.yarolegovich.motionink.util.Utils;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * Created by yarolegovich on 04.06.2016.
@@ -31,7 +35,7 @@ public abstract class Serializer<T, U> {
     }
 
     public int noOfSlides() {
-        return getDir().list().length;
+        return getFiles().length;
     }
 
     public void prepareDir() {
@@ -43,21 +47,26 @@ public abstract class Serializer<T, U> {
     }
 
     public void remove(int slidePosition) {
-        File dir = getDir();
-        File[] children = dir.listFiles();
+        File[] children = getFiles();
         boolean removed = false;
+        Arrays.sort(children, Utils.NUMBER_COMPARATOR);
         for (File file : children) {
             if (file.getName().equals(getFileName(slidePosition))) {
-                removed = true;
-                file.delete();
+                removed = file.delete();
+                Log.d("tag", String.format("removed slide #%d: %b", slidePosition, removed));
                 break;
             }
         }
         if (removed) {
             for (int i = slidePosition + 1; i < children.length; i++) {
                 File newName = new File(getDir(), getFileName(i - 1));
-                new File(getDir(), getFileName(slidePosition)).renameTo(newName);
+                Log.d("tag", getFileName(i) + " renamed to -> " + newName.getName());
+                new File(getDir(), getFileName(i)).renameTo(newName);
             }
         }
+    }
+
+    protected File[] getFiles() {
+        return getDir().listFiles();
     }
 }

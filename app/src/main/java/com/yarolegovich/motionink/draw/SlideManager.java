@@ -40,20 +40,20 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         if (slidePosition == currentPosition) {
             return;
         }
-        strokeSerializer.save(currentPosition, drawingArea.getStrokeList());
+        persistCurrentSlide();
         drawingArea.displayRaster(slideImageSerializer.load(slidePosition));
         if (slidePosition != SlideView.POSITION_BG) {
             drawingArea.setBackgroundStrokes(backgroundStrokes);
             List<Stroke> strokes = strokeSerializer.load(slidePosition);
-            drawingArea.setStrokeList(strokes);
             List<Stroke> previousSlideStrokes = slidePosition != currentPosition + 1 ?
                     strokeSerializer.load(slidePosition - 1) :
                     drawingArea.getStrokeList();
             drawingArea.setPreviousSlideStrokes(previousSlideStrokes);
+            drawingArea.setStrokeList(strokes);
         } else {
             drawingArea.setBackgroundStrokes(Collections.emptyList());
-            drawingArea.setStrokeList(backgroundStrokes);
             drawingArea.setPreviousSlideStrokes(Collections.emptyList());
+            drawingArea.setStrokeList(backgroundStrokes);
         }
         currentPosition = slidePosition;
     }
@@ -72,9 +72,14 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         slideImageSerializer.remove(slidePosition);
     }
 
+
     public void reinitialize(int slidePosition) {
         currentPosition = Integer.MIN_VALUE;
         onSlideSelected(slidePosition);
+    }
+
+    public void persistCurrentSlide() {
+        strokeSerializer.save(currentPosition, drawingArea.getStrokeList());
     }
 
     public void setNumberOfSlides(int numberOfSlides) {
