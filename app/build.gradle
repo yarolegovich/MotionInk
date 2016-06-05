@@ -13,7 +13,9 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -32,5 +34,6 @@ dependencies {
     compile 'com.android.support:design:23.4.0'
     compile 'com.github.QuadFlask:colorpicker:0.0.10'
     compile 'net.bozho.easycamera:easycamera:0.0.1:aar@aar'
-    compile name: 'will-sdk-1.8.1', ext:'aar'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.+'
+    compile name: 'will-sdk-1.8.1', ext: 'aar'
 }

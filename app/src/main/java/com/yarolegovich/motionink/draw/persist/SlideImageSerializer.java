@@ -18,12 +18,15 @@ import java.io.OutputStream;
 public class SlideImageSerializer extends Serializer<byte[], Bitmap> {
 
     private int savedCounter = 0;
+    private int rotation;
 
     public SlideImageSerializer(Context context) {
         super(context);
     }
 
-    public void saveImage(byte[] data) {
+
+    public void saveImage(byte[] data, int cameraId) {
+        rotation = cameraId == 0 ? 90 : -90;
         save(savedCounter, data);
     }
 
@@ -33,7 +36,7 @@ public class SlideImageSerializer extends Serializer<byte[], Bitmap> {
 
         Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
         Matrix rotationMat = new Matrix();
-        rotationMat.setRotate(90);
+        rotationMat.setRotate(rotation);
 
         float centerY = ((float) image.getHeight()) / 2f;
         float centerX = ((float) image.getWidth()) / 2f;

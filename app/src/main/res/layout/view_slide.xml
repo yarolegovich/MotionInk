@@ -30,7 +30,7 @@
             android:layout_gravity="right"
             android:clickable="true"
             android:src="@drawable/ic_close_black_18dp"
-            android:tint="?android:textColorSecondary" />
+            android:tint="#727272" />
     </FrameLayout>
 
 </FrameLayout>

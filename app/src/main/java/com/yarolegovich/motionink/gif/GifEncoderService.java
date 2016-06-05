@@ -3,13 +3,16 @@ package com.yarolegovich.motionink.gif;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
 
+import com.yarolegovich.motionink.R;
 import com.yarolegovich.motionink.util.Utils;
 
 import java.io.File;
@@ -37,6 +40,8 @@ public class GifEncoderService extends IntentService {
     }
 
     private NotificationManager nm;
+
+    private Uri gifUri;
     private int noOfFrames;
 
     public GifEncoderService() {
@@ -45,11 +50,11 @@ public class GifEncoderService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Uri out = (Uri) intent.getParcelableExtra(EXTRA_OUT);
+        gifUri = intent.getParcelableExtra(EXTRA_OUT);
         int delay = intent.getIntExtra(EXTRA_DELAY, 100);
         File framesDir = new File(getFilesDir() + GifSaver.FRAMES_DIR);
         File[] frames = framesDir.listFiles();
-        Arrays.sort(frames, Utils.NUMBER_COMPARATOR);
+        Arrays.sort(frames, Utils.NUMBER_REVERSE);
 
         nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         noOfFrames = frames.length;
@@ -59,7 +64,7 @@ public class GifEncoderService extends IntentService {
             gifEncoder.setRepeat(0);
             gifEncoder.setDelay(delay);
 
-            OutputStream os = getContentResolver().openOutputStream(out);
+            OutputStream os = getContentResolver().openOutputStream(gifUri);
             gifEncoder.start(os);
 
             for (int i = 0; i < frames.length; i++) {
@@ -71,20 +76,43 @@ public class GifEncoderService extends IntentService {
 
             gifEncoder.finish();
 
+            for (int i = 0; i < frames.length; i++) {
+                frames[i].delete();
+            }
+
             notifyDone();
         } catch (FileNotFoundException e) {
             Log.e(getClass().getSimpleName(), e.getMessage(), e);
+            notifyFail(e.getMessage());
         }
     }
 
     private void notifyProgress(int frameNo) {
         nm.notify(NOTIF_ID, new Notification.Builder(getApplicationContext())
-                .setContentTitle("Creating GIF")
-                .setContentText(String.format("Processed %d out of %d frames", frameNo, noOfFrames))
+                .setContentTitle("Creating GIF...")
+                .setProgress(noOfFrames, frameNo, false)
+                .setSmallIcon(R.drawable.ic_stat_av_loop)
                 .build());
     }
 
     private void notifyDone() {
+        Intent shareIntent = Utils.createGifShareIntent(gifUri);
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 9392, shareIntent, 0);
+        nm.notify(NOTIF_ID, new Notification.Builder(getApplicationContext())
+                .setContentText("Your GIF is ready, share it with you friends")
+                .setContentTitle("Tap to share!")
+                .setContentIntent(pi)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setSmallIcon(R.drawable.ic_stat_action_thumb_up)
+                .build());
+    }
 
+    private void notifyFail(String message) {
+        nm.notify(NOTIF_ID, new Notification.Builder(getApplicationContext())
+                .setContentTitle("Failed to create a GIF")
+                .setContentText(message)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setSmallIcon(R.drawable.ic_stat_alert_error)
+                .build());
     }
 }

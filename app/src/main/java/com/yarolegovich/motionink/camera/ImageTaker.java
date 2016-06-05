@@ -57,9 +57,10 @@ public abstract class ImageTaker implements TextureView.SurfaceTextureListener {
     }
 
 
+    public abstract void changeCamera();
     public abstract void capture();
 
     public interface Callback {
-        void onImageTaken(byte[] imageData);
+        void onImageTaken(byte[] imageData, int cameraId);
     }
 }

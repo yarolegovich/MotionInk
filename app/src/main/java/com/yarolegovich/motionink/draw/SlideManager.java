@@ -37,20 +37,26 @@ public class SlideManager implements SlideView.SlideSelectionListener {
 
     @Override
     public void onSlideSelected(int slidePosition) {
-        if (slidePosition == currentPosition) {
+        if (slidePosition == currentPosition && !onDemand) {
             return;
         }
+        onDemand = false;
         persistCurrentSlide();
         drawingArea.displayRaster(slideImageSerializer.load(slidePosition));
         if (slidePosition != SlideView.POSITION_BG) {
             drawingArea.setBackgroundStrokes(backgroundStrokes);
             List<Stroke> strokes = strokeSerializer.load(slidePosition);
-            List<Stroke> previousSlideStrokes = slidePosition != currentPosition + 1 ?
-                    strokeSerializer.load(slidePosition - 1) :
-                    drawingArea.getStrokeList();
-            drawingArea.setPreviousSlideStrokes(previousSlideStrokes);
+            if (slidePosition - 1 >= 0) {
+                List<Stroke> previousSlideStrokes = slidePosition != currentPosition + 1 ?
+                        strokeSerializer.load(slidePosition - 1) :
+                        drawingArea.getStrokeList();
+                drawingArea.setPreviousSlideStrokes(previousSlideStrokes);
+            } else {
+                drawingArea.setPreviousSlideStrokes(Collections.emptyList());
+            }
             drawingArea.setStrokeList(strokes);
         } else {
+            drawingArea.displayRaster(slideImageSerializer.load(0));
             drawingArea.setBackgroundStrokes(Collections.emptyList());
             drawingArea.setPreviousSlideStrokes(Collections.emptyList());
             drawingArea.setStrokeList(backgroundStrokes);
@@ -72,9 +78,14 @@ public class SlideManager implements SlideView.SlideSelectionListener {
         slideImageSerializer.remove(slidePosition);
     }
 
+    public void clearAll() {
+        strokeSerializer.prepareDir();
+        slideImageSerializer.prepareDir();
+    }
 
+    private boolean onDemand = false;
     public void reinitialize(int slidePosition) {
-        currentPosition = Integer.MIN_VALUE;
+        onDemand = true;
         onSlideSelected(slidePosition);
     }
 

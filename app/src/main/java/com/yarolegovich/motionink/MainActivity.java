@@ -3,6 +3,7 @@ package com.yarolegovich.motionink;
 import android.Manifest;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -12,6 +13,7 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
@@ -31,12 +33,24 @@ import com.yarolegovich.motionink.view.SlideView;
 import com.yarolegovich.motionink.view.ToolPanelView;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 @SuppressWarnings("ConstantConditions")
 public class MainActivity extends AppCompatActivity implements ToolPanelView.OnToolSelectedListener,
         PresentationControlView.OnPresentationControlListener {
 
     private static final int REQUEST_TAKE_PICTURES = 5777;
+
+    private static final String EXTRA_FROM_SCRATCH = "extra_from_scratch";
+
+    public static Intent callingIntent(Context context, boolean startFromScratch) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(EXTRA_FROM_SCRATCH, startFromScratch);
+        return intent;
+    }
 
     private DrawingArea drawingArea;
 
@@ -77,6 +91,11 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
         brushConfigureDialog.setWidthListener(drawingArea::setWidth);
 
         slideManager = new SlideManager(drawingArea);
+
+        if (getIntent().getBooleanExtra(EXTRA_FROM_SCRATCH, false)) {
+            slideManager.clearAll();
+        }
+
         slideView = (SlideView) findViewById(R.id.slide_view);
         slideView.setListener(slideManager);
         slideView.addSlides(slideManager.getNumberOfSlides() - 1);
@@ -93,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
     public void onToolSelected(int id, ToolPanelView.ToolInterface toolInterface) {
         switch (id) {
             case R.id.toolpanel_back:
+                finish();
                 break;
             case R.id.toolpanel_brush:
                 drawingArea.setCurrentTool(new StandardBrushTool());
@@ -104,8 +124,10 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
                 toolInterface.setSelected(true);
                 break;
             case R.id.toolpanel_undo:
+                toBeAdded();
                 break;
             case R.id.toolpanel_redo:
+                toBeAdded();
                 break;
             case R.id.toolpanel_camera:
                 openCameraActivity();
@@ -123,11 +145,14 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
                 switchPresentationViewMode(false);
                 break;
             case R.id.presentation_share:
-                saveGifTo(Utils.createDirIfNotExists(getFilesDir() + "/out"));
+                permissionHelper.doIfPermitted(
+                        () -> saveGifTo(getExternalCacheDir()),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 break;
             case R.id.presentation_save:
+                File appDir = Utils.createDirIfNotExists(Environment.getExternalStorageDirectory() + "/motionink");
                 permissionHelper.doIfPermitted(
-                        () -> saveGifTo(Environment.getExternalStorageDirectory()),
+                        () -> saveGifTo(appDir),
                         Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 break;
         }
@@ -138,6 +163,17 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
                 "Please wait...", "",
                 true);
         previewHandler.removeCallbacksAndMessages(null);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        DateFormat tsFormat = new SimpleDateFormat("yyyy.MM.dd_hh:mm", Locale.getDefault());
+        File outFile = new File(dir, tsFormat.format(System.currentTimeMillis()) + "_anim.gif");
+        try {
+            outFile.createNewFile();
+        } catch (IOException e) {
+            Log.e("tag", e.getMessage(), e);
+        }
+        Log.d("tag", outFile.toString());
         gifSaver.prepareFilesToCreateGif(slideNo -> {
             if (slideNo < slideView.noOfSlides()) {
                 slideManager.nextSlide();
@@ -147,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
                 progressDialog.dismiss();
                 switchPresentationViewMode(false);
                 Intent createGifIntent = GifEncoderService.callingIntent(
-                        this, Uri.fromFile(dir),
+                        this, Uri.fromFile(outFile),
                         presentationSpeedView.getAnimationSpeed());
                 startService(createGifIntent);
                 Toast.makeText(this,
@@ -197,8 +233,8 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
+    protected void onResume() {
+        super.onResume();
         slideManager.reinitialize(slideView.getCurrentSlide());
     }
 
@@ -212,9 +248,7 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PICTURES) {
             if (resultCode == RESULT_OK) {
-                new Handler().postDelayed(
-                        () -> slideManager.reinitialize(slideView.getCurrentSlide()),
-                        500);
+                slideView.reInit(slideManager.getNumberOfSlides());
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -232,6 +266,10 @@ public class MainActivity extends AppCompatActivity implements ToolPanelView.OnT
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionHelper.handleGrantResults(grantResults);
+    }
+
+    private void toBeAdded() {
+        Toast.makeText(this, "To be added...", Toast.LENGTH_SHORT).show();
     }
 
 }

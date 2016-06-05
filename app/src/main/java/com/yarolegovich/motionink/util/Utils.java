@@ -1,7 +1,9 @@
 package com.yarolegovich.motionink.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.DisplayMetrics;
 
 import java.io.File;
@@ -23,6 +25,9 @@ public class Utils {
         return Integer.parseInt(f1m.group()) - Integer.parseInt(f2m.group());
     };
 
+    public static final Comparator<File> NUMBER_REVERSE = (f1, f2) ->
+            -NUMBER_COMPARATOR.compare(f1, f2);
+
     public static int dpToPx(Context context, int dp) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -36,4 +41,12 @@ public class Utils {
         }
         return file;
     }
+
+    public static Intent createGifShareIntent(Uri gifUri) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("image/gif");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, gifUri);
+        return shareIntent;
+    }
+
 }

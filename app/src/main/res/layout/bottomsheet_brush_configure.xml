@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
+        android:elevation="8dp"
         android:background="@android:color/white"
         android:orientation="vertical"
         android:paddingBottom="12dp"
@@ -18,7 +19,7 @@
             style="@style/MaterialHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/brush_width" />
+            android:text="@string/brush_size" />
 
         <android.support.v7.widget.AppCompatSeekBar
             android:id="@+id/width_slider"
@@ -76,5 +77,6 @@
         android:layout_gravity="right"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
+        app:elevation="8dp"
         android:src="@drawable/ic_settings_white_24dp" />
 </FrameLayout>
